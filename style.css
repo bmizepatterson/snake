@@ -1,0 +1,10 @@
+body {
+    margin: 0;
+    background: #222;
+}
+#app {
+    width: 500px;
+    height: 500px;
+    margin: 100px auto;
+    box-shadow: 0 0 50px 1px #aaa;
+}
