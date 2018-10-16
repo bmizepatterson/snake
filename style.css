@@ -8,3 +8,39 @@ body {
     margin: 100px auto;
     box-shadow: 0 0 50px 1px #aaa;
 }
+#start-button {
+    width: 100%;
+    height: 100%;
+    text-align:center;
+    line-height: 500px;
+}
+#start-button button {
+    border: 0;
+    outline: 0;
+    background: #fff;
+    font-size: 1.5rem;
+    padding: 8px 16px;
+    color: #015b00;
+    font-weight: bold;
+    letter-spacing: 1px;
+    transition: 0.2s;
+}
+#start-button button:hover {
+    box-shadow: 0 0 50px 1px #aaa;
+}
+
+#start-button button:active {
+    transform: scale(0.95);
+
+}
+.wink-out {
+    animation-name: wink-out;
+    animation-delay: 0.2s;
+    animation-duration: 1s;
+    animation-timing-function: ease-in;
+    animation-fill-mode: forwards;
+}
+@keyframes wink-out {
+    from {transform: scale(1);}
+    to {transform: scale(0);}
+}
