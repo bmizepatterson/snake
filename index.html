@@ -8,9 +8,9 @@
 </head>
 <body>
 
-    <div id="app">
+    <div id="app" v-cloak>
         <div class="overlay">
-            <button @click="start" :class="startSequence" id="start-button" type="button">START</button>
+            <button @click="start" :class="startSequence" id="start-button" type="button">{{ buttonText }}</button>
         </div>
         <canvas id="game-board" ref="gameBoard" width="500" height="500"></canvas>
     </div>
