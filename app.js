@@ -1,156 +1,82 @@
-let startButton = null;
-let gameInProgress = false;
-let snake = null;
-let food = null;
-let spacer = 20;
+new Vue({
 
-function setup() {
-    let canvas = createCanvas(500, 500);
-    canvas.parent('app');
-    startButton = document.getElementById('startButton');
-    startButton.onclick = start;
-    frameRate(10);
-}
+    el: "#app",
 
-function draw() {
-    if (!gameInProgress) return;
-
-    if (snake.isInBounds()) {
-        clear();
-        drawGrid();
-        if (snake.isOnFood()) {
-            food = null;
-            snake.grow();
-        }
-        drawFood();
-        snake.draw();
-        snake.move();
-    }
-}
-
-function drawGrid() {
-    stroke(50);
-    for (let x = spacer; x < width; x += spacer) {
-        line(x, 0, x, width);
-    }
-    for (let y = spacer; y < height; y += spacer) {
-        line(0, y, height, y);
-    }
-}
-
-function Snake(x, y, size) {
-    this.x = x;
-    this.y = y;
-    this.size = size;
-    this.direction = 'up';
-    this.length = 1;
-    this.speed = 1;
-
-    this.isInBounds= function() {
-        // Have we run into the wall?
-        if (this.y < 0 ||
-            this.y > height - this.size ||
-            this.x < 0 ||
-            this.x > width - this.size) {
-
-            triggerLoss();
-            return false;
-        }
-        return true;
-    }
-
-    this.draw = function() {
-        noStroke();
-        fill(255);
-        rect(this.x, this.y, this.size, this.size);
+    data: {
+        canvas: null,
+        ctx: null,
+        snake: null,
+        food: null,
+        spacer: 20,
+        startSequence: '',
+        gameInProgress: false
     },
 
-    this.move = function() {
-        switch (this.direction) {
-            case 'up':
-                this.y -= this.size;
-                break;
-            case 'down':
-                this.y += this.size;
-                break;
-            case 'left':
-                this.x -= this.size;
-                break;
-            case 'right':
-                this.x += this.size;
-                break;
+    mounted: function() {
+        this.canvas = this.$refs.gameBoard;
+        this.ctx = this.canvas.getContext('2d');
+    },
+
+    methods: {
+        start: function() {
+            let self = this;
+
+            self.snake = new self.Snake(self.snap(self.canvas.width/2), self.snap(self.canvas.height/2), self.spacer);
+            self.beginStartSequence();
+
+            setTimeout(function () {
+                self.endStartSequence();
+                self.gameInProgress = true;
+                requestAnimationFrame(self.draw);
+            }, 1500);
+        },
+
+        draw: function() {
+            this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+            this.drawGrid();
+        },
+
+        drawGrid() {
+            this.ctx.strokeStyle = '#323232';
+            this.ctx.lineWidth = 1;
+            for (let x = this.spacer + 0.5; x < this.canvas.width; x += this.spacer) {
+                this.ctx.beginPath();
+                this.ctx.moveTo(x, 0);
+                this.ctx.lineTo(x, this.canvas.width);
+                this.ctx.stroke();
+            }
+            for (let y = this.spacer + 0.5; y < this.canvas.height; y += this.spacer) {
+                this.ctx.beginPath();
+                this.ctx.moveTo(0, y);
+                this.ctx.lineTo(this.canvas.height, y);
+                this.ctx.stroke();
+            }
+        },
+
+        beginStartSequence() {
+            this.setStartSequence('wink-out');
+        },
+
+        endStartSequence() {
+            this.setStartSequence('display-none');
+        },
+
+        setStartSequence(sequence) {
+            this.startSequence = sequence;
+        },
+
+        snap: function(val) {
+            return this.spacer * Math.round(val / this.spacer);
+        },
+
+        Snake: function(x, y, size) {
+            return {
+                x: x,
+                y: y,
+                size: size
+            }
         }
-    }
 
-    this.isOnFood = function() {
-        return (food &&
-                this.x == food.x &&
-                this.y == food.y);
-    }
-
-    this.grow = function () {
 
     }
-}
-
-function Food(x, y, size) {
-    this.x = x;
-    this.y = y;
-    this.size = size;
-
-    this.draw = function() {
-        noStroke();
-        fill(255);
-        rect(this.x, this.y, this.size, this.size);
-    }
-}
-
-function drawFood() {
-    if (!food) {
-        // Place new food
-        let randomX = snap(Math.random() * width);
-        let randomY = snap(Math.random() * height);
-        food = new Food(randomX, randomY, spacer);
-    }
-    food.draw();
-}
-
-function start() {
-    snake = new Snake(snap(width/2), snap(height/2), spacer);
-    startButton.classList.add('wink-out');
-    setTimeout(function() {
-        startButton.style.display = 'none';
-        gameInProgress = true;
-    }, 1500);
-}
-
-function triggerLoss() {
-    gameInProgress = false;
-    startButton.innerHTML = 'TRY AGAIN';
-    startButton.style.display = 'inline-block';
-    startButton.classList.remove('wink-out');
-}
-
-function keyPressed() {
-    switch (keyCode) {
-        case UP_ARROW:
-            snake.direction = 'up';
-            break;
-        case DOWN_ARROW:
-            snake.direction = 'down';
-            break;
-        case LEFT_ARROW:
-            snake.direction = 'left';
-            break;
-        case RIGHT_ARROW:
-            snake.direction = 'right';
-            break;
-    }
-
-    return false;
-}
-
-// Utilities
-function snap(val, spacing = spacer) {
-    return spacing * Math.round(val/spacing);
-}
+});

@@ -10,11 +10,12 @@
 
     <div id="app">
         <div class="overlay">
-            <button id="startButton" type="button">START</button>
+            <button @click="start" :class="startSequence" id="start-button" type="button">START</button>
         </div>
+        <canvas id="game-board" ref="gameBoard" width="500" height="500"></canvas>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.7.2/p5.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
     <script src="app.js"></script>
 </body>
 </html>
