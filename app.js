@@ -16,6 +16,7 @@ new Vue({
     mounted: function() {
         this.canvas = this.$refs.gameBoard;
         this.ctx = this.canvas.getContext('2d');
+        window.addEventListener('keydown', this.keyDown);
     },
 
     computed: {
@@ -27,10 +28,8 @@ new Vue({
     methods: {
         start: function() {
             let self = this;
-
             self.snake = new self.Snake(self.snap(self.canvas.width/2), self.snap(self.canvas.height/2), self.spacer, self);
             self.beginStartSequence();
-
             setTimeout(self.endStartSequence, 1500);
         },
 
@@ -38,6 +37,11 @@ new Vue({
             if (this.snake.isInBounds()) {
                 this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
                 this.drawGrid();
+                if (this.snake.isOnFood()) {
+                    this.food = null;
+                    this.snake.grow();
+                }
+                this.drawFood();
                 this.snake.draw();
                 this.snake.move();
             }
@@ -47,7 +51,7 @@ new Vue({
             }
         },
 
-        drawGrid() {
+        drawGrid: function() {
             this.ctx.strokeStyle = '#323232';
             this.ctx.lineWidth = 1;
             for (let x = this.spacer + 0.5; x < this.canvas.width; x += this.spacer) {
@@ -64,18 +68,28 @@ new Vue({
             }
         },
 
-        beginStartSequence() {
+        drawFood: function() {
+            if (!this.food) {
+                // Place new food
+                let randomX = this.snap(Math.random() * this.canvas.width);
+                let randomY = this.snap(Math.random() * this.canvas.height);
+                this.food = new this.Food(randomX, randomY, this.spacer, this);
+            }
+            this.food.draw();
+        },
+
+        beginStartSequence: function() {
             this.setStartSequence('wink-out');
         },
 
-        endStartSequence() {
+        endStartSequence: function() {
             this.gameCounter++;
             this.gameInProgress = true;
             this.setStartSequence('display-none');
             requestAnimationFrame(this.draw);
         },
 
-        setStartSequence(sequence) {
+        setStartSequence: function(sequence) {
             this.startSequence = sequence;
         },
 
@@ -88,8 +102,33 @@ new Vue({
             this.startSequence = '';
         },
 
+        keyDown: function(event) {
+            switch (event.key) {
+                case 'ArrowUp':
+                this.snake.direction = 'up';
+                break;
+                case 'ArrowDown':
+                this.snake.direction = 'down';
+                break;
+                case 'ArrowLeft':
+                this.snake.direction = 'left';
+                break;
+                case 'ArrowRight':
+                this.snake.direction = 'right';
+                break;
+            }
+            switch (event.key) {
+                case 'ArrowUp':
+                case 'ArrowDown':
+                case 'ArrowLeft':
+                case 'ArrowRight':
+                    event.preventDefault();
+                    break;
+            }
+        },
+
         Snake: function(x, y, size, self) {
-            // Vue instance must be passed manually
+            // self = Vue instance, which must be passed manually
             return {
                 x: x,
                 y: y,
@@ -130,6 +169,31 @@ new Vue({
                             this.x += this.size;
                             break;
                     }
+                },
+
+                isOnFood: function() {
+                    return (self.food &&
+                        this.x == self.food.x &&
+                        this.y == self.food.y);
+                },
+
+                grow: function() {
+
+                }
+            }
+        },
+
+        Food: function(x, y, size, self) {
+            // self = Vue instance, which must be passed manually
+            return {
+                x: x,
+                y: y,
+                size: size,
+
+                draw: function () {
+                    self.ctx.beginPath();
+                    self.ctx.fillStyle = '#fff';
+                    self.ctx.fillRect(this.x, this.y, this.size, this.size);
                 }
             }
         }
