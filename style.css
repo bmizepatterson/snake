@@ -4,12 +4,19 @@
 body {
     margin: 0;
     background: #222;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif
+}
+.wrapper {
+    width: 500px;
+    margin: 100px auto;
 }
 #app {
-    width: 500px;
     height: 500px;
-    margin: 100px auto;
     box-shadow: 0 0 50px 1px #aaa;
+}
+.game-message {
+    color: #fff;
+    margin-bottom: 2em;
 }
 .display-none {
     display: none;
@@ -35,12 +42,10 @@ body {
 .overlay button:hover {
     box-shadow: 0 0 50px 1px #aaa;
 }
-
 .overlay button:active {
     transform: scale(0.95);
 
 }
-
 .wink-out, .wink-in {
     animation-name: wink-out;
     animation-delay: 0.2s;
@@ -48,11 +53,9 @@ body {
     animation-timing-function: ease-in;
     animation-fill-mode: both;
 }
-
 .wink-in {
     animation-direction: reverse;
 }
-
 @keyframes wink-out {
     from {transform: scale(1);}
     to {transform: scale(0);}

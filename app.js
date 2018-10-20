@@ -1,6 +1,6 @@
 new Vue({
 
-    el: "#app",
+    el: "#root",
 
     data: {
         canvas: null,
@@ -10,7 +10,8 @@ new Vue({
         spacer: 20,
         startSequence: '',
         gameInProgress: false,
-        gameCounter: 0
+        gameCounter: 0,
+        score: 0
     },
 
     mounted: function() {
@@ -39,6 +40,7 @@ new Vue({
                 this.drawGrid();
                 if (this.snake.isOnFood()) {
                     this.food = null;
+                    this.score++;
                     this.snake.grow();
                 }
                 this.drawFood();
@@ -79,6 +81,8 @@ new Vue({
         },
 
         beginStartSequence: function() {
+            this.score = 0;
+            this.food = null;
             this.setStartSequence('wink-out');
         },
 
