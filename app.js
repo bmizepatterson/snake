@@ -1,6 +1,7 @@
 let startButton = null;
 let gameInProgress = false;
 let snake = null;
+let food = null;
 let spacer = 20;
 
 function setup() {
@@ -14,9 +15,14 @@ function setup() {
 function draw() {
     if (!gameInProgress) return;
 
-    if (snake.check()) {
+    if (snake.isInBounds()) {
         clear();
         drawGrid();
+        if (snake.isOnFood()) {
+            food = null;
+            snake.grow();
+        }
+        drawFood();
         snake.draw();
         snake.move();
     }
@@ -40,7 +46,8 @@ function Snake(x, y, size) {
     this.length = 1;
     this.speed = 1;
 
-    this.check= function() {
+    this.isInBounds= function() {
+        // Have we run into the wall?
         if (this.y < 0 ||
             this.y > height - this.size ||
             this.x < 0 ||
@@ -74,6 +81,38 @@ function Snake(x, y, size) {
                 break;
         }
     }
+
+    this.isOnFood = function() {
+        return (food &&
+                this.x == food.x &&
+                this.y == food.y);
+    }
+
+    this.grow = function () {
+
+    }
+}
+
+function Food(x, y, size) {
+    this.x = x;
+    this.y = y;
+    this.size = size;
+
+    this.draw = function() {
+        noStroke();
+        fill(255);
+        rect(this.x, this.y, this.size, this.size);
+    }
+}
+
+function drawFood() {
+    if (!food) {
+        // Place new food
+        let randomX = snap(Math.random() * width);
+        let randomY = snap(Math.random() * height);
+        food = new Food(randomX, randomY, spacer);
+    }
+    food.draw();
 }
 
 function start() {
