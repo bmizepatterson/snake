@@ -73,8 +73,8 @@ new Vue({
         drawFood: function() {
             if (!this.food) {
                 // Place new food
-                let randomX = this.snap(Math.random() * this.canvas.width);
-                let randomY = this.snap(Math.random() * this.canvas.height);
+                let randomX = this.snap(Math.random() * (this.canvas.width - this.spacer));
+                let randomY = this.snap(Math.random() * (this.canvas.height - this.spacer));
                 this.food = new this.Food(randomX, randomY, this.spacer, this);
             }
             this.food.draw();
@@ -134,10 +134,13 @@ new Vue({
         Snake: function(x, y, size, self) {
             // self = Vue instance, which must be passed manually
             return {
-                x: x,
+                x: x,   // The position of the head
                 y: y,
                 size: size,
                 direction: 'up',
+                // An array of past positions; used for rendering segments
+                path: [{ x: x, y: y }],
+                segments: 1,
 
                 isInBounds: function() {
                     // Have we run into the wall?
@@ -153,9 +156,11 @@ new Vue({
                 },
 
                 draw: function() {
-                    self.ctx.beginPath();
-                    self.ctx.fillStyle = '#fff';
-                    self.ctx.fillRect(this.x, this.y, this.size, this.size);
+                    for (let i = 0; i < this.segments; i++) {
+                        self.ctx.beginPath();
+                        self.ctx.fillStyle = '#fff';
+                        self.ctx.fillRect(this.path[i].x, this.path[i].y, this.size, this.size);
+                    }
                 },
 
                 move: function() {
@@ -173,6 +178,10 @@ new Vue({
                             this.x += this.size;
                             break;
                     }
+                    // Add this new position to the path history
+                    this.path.unshift({ x: this.x, y: this.y });
+                    // Trim off irrelevant path data
+                    this.path.splice(this.segments + 1);
                 },
 
                 isOnFood: function() {
@@ -182,7 +191,7 @@ new Vue({
                 },
 
                 grow: function() {
-
+                    this.segments++;
                 }
             }
         },
