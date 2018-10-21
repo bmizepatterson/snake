@@ -7,7 +7,7 @@ new Vue({
         ctx: null,
         snake: null,
         food: null,
-        spacer: 20,
+        spacer: 10,
         startSequence: '',
         gameInProgress: false,
         gameCounter: 0,
@@ -57,7 +57,7 @@ new Vue({
 
             if (this.snake.isInBounds() && this.snake.isClearOfItself()) {
                 this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-                this.drawGrid();
+                // this.drawGrid();
                 if (this.snake.isOnFood()) {
                     this.food = null;
                     this.snake.grow();
