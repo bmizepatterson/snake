@@ -8,13 +8,13 @@
 </head>
 <body>
     <div id="root" class="wrapper" v-cloak>
-        <p class="game-message">Score: {{ score }}</p>
         <div id="app">
             <div class="overlay">
                 <button @click="start" :class="startSequence" id="start-button" type="button">{{ buttonText }}</button>
             </div>
             <canvas id="game-board" ref="gameBoard" width="500" height="500"></canvas>
         </div>
+        <div v-if="gameWon" class="win-message">Wow! You won! Amazing!</div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>

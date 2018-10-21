@@ -11,7 +11,7 @@ new Vue({
         startSequence: '',
         gameInProgress: false,
         gameCounter: 0,
-        score: 0
+        gameWon: false
     },
 
     mounted: function() {
@@ -22,7 +22,17 @@ new Vue({
 
     computed: {
         buttonText: function() {
-            return (this.gameCounter ? 'TRY AGAIN' : 'START');
+            if (this.gameWon) {
+                return 'PLAY AGAIN';
+            }
+            if (this.gameCounter) {
+                return 'TRY AGAIN';
+            }
+            return 'START';
+        },
+
+        gridSize: function() {
+            return this.canvas.width / this.spacer * this.canvas.height / this.spacer;
         }
     },
 
@@ -30,17 +40,26 @@ new Vue({
         start: function() {
             let self = this;
             self.snake = new self.Snake(self.snap(self.canvas.width/2), self.snap(self.canvas.height/2), self.spacer, self);
+            self.food = null;
+            self.gameWon = false;
             self.beginStartSequence();
-            setTimeout(self.endStartSequence, 1500);
+            setTimeout(() => {
+                this.gameCounter++;
+                this.gameInProgress = true;
+                self.endStartSequence();
+                requestAnimationFrame(this.draw);
+            }, 1500);
         },
 
         draw: function() {
-            if (this.snake.isInBounds()) {
+            // The unlikely win scenario
+            if (this.snake.segments == this.gridSize) this.triggerWin();
+
+            if (this.snake.isInBounds() && this.snake.isClearOfItself()) {
                 this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
                 this.drawGrid();
                 if (this.snake.isOnFood()) {
                     this.food = null;
-                    this.score++;
                     this.snake.grow();
                 }
                 this.drawFood();
@@ -73,24 +92,34 @@ new Vue({
         drawFood: function() {
             if (!this.food) {
                 // Place new food
-                let randomX = this.snap(Math.random() * (this.canvas.width - this.spacer));
-                let randomY = this.snap(Math.random() * (this.canvas.height - this.spacer));
-                this.food = new this.Food(randomX, randomY, this.spacer, this);
+                let [x, y] = this.getNewFoodCoords();
+                this.food = new this.Food(x, y, this.spacer, this);
             }
             this.food.draw();
         },
 
+        getNewFoodCoords: function() {
+            let randomX, randomY, tryAgain;
+            do {
+                tryAgain = false;
+                randomX = this.snap(Math.random() * (this.canvas.width - this.spacer));
+                randomY = this.snap(Math.random() * (this.canvas.height - this.spacer));
+                // Make sure the new food isn't placed underneath the snake
+                for (let segment of this.snake.path) {
+                    if (randomX == segment.x && randomY == segment.y) {
+                        tryAgain = true;
+                    }
+                }
+            } while (tryAgain)
+            return [randomX, randomY];
+        },
+
         beginStartSequence: function() {
-            this.score = 0;
-            this.food = null;
             this.setStartSequence('wink-out');
         },
 
         endStartSequence: function() {
-            this.gameCounter++;
-            this.gameInProgress = true;
             this.setStartSequence('display-none');
-            requestAnimationFrame(this.draw);
         },
 
         setStartSequence: function(sequence) {
@@ -106,28 +135,38 @@ new Vue({
             this.startSequence = '';
         },
 
+        triggerWin: function() {
+            this.gameInProgress = false;
+            this.startSequence = '';
+            this.gameWon = true;
+        },
+
         keyDown: function(event) {
-            switch (event.key) {
-                case 'ArrowUp':
+            // Prevent snake from curling back on itself when it has more than one segment
+            if (event.key === 'ArrowUp' &&
+                (this.snake.direction !== 'down' || this.snake.segments == 1)
+            ) {
                 this.snake.direction = 'up';
-                break;
-                case 'ArrowDown':
+
+            } else if (event.key === 'ArrowDown' &&
+                (this.snake.direction !== 'up' || this.snake.segments == 1)
+            ) {
                 this.snake.direction = 'down';
-                break;
-                case 'ArrowLeft':
+
+            } else if (event.key === 'ArrowLeft' &&
+                (this.snake.direction !== 'right' || this.snake.segments == 1)
+            ) {
                 this.snake.direction = 'left';
-                break;
-                case 'ArrowRight':
+
+            } else if (event.key === 'ArrowRight' &&
+                (this.snake.direction !== 'left' || this.snake.segments == 1)
+            ) {
                 this.snake.direction = 'right';
-                break;
             }
-            switch (event.key) {
-                case 'ArrowUp':
-                case 'ArrowDown':
-                case 'ArrowLeft':
-                case 'ArrowRight':
+
+            if (event.key === 'ArrowUp' || event.key === 'ArrowDown' ||
+                event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
                     event.preventDefault();
-                    break;
             }
         },
 
@@ -151,6 +190,19 @@ new Vue({
 
                         self.triggerLoss();
                         return false;
+                    }
+                    return true;
+                },
+
+                isClearOfItself: function() {
+                    // Head of snake shouldn't intersect with any segment
+                    // in the path... except for the head itself, of course,
+                    // so start loop at index 1.
+                    for (let i = 1; i < this.path.length; i++) {
+                        if (this.x == this.path[i].x && this.y == this.path[i].y) {
+                            self.triggerLoss();
+                            return false;
+                        }
                     }
                     return true;
                 },
@@ -181,6 +233,7 @@ new Vue({
                     // Add this new position to the path history
                     this.path.unshift({ x: this.x, y: this.y });
                     // Trim off irrelevant path data
+                    // The length of this.path should equal this.segments
                     this.path.splice(this.segments + 1);
                 },
 
